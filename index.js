@@ -1,53 +1,66 @@
+
+// index.js
+const express = require('express');
+const app = express();
 const port = 3000;
-const db = require("./db.js");
 
-app.use(express.static("public"));
+const db = require('./db');
 
-app.set("view engine", "ejs");
+app.use(express.static('public'));
+
+app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: false }));
 
 // Obtener todos los usuarios
-app.get("/", (req, res) => {
-	sql = "SELECT * FROM usuarios";
-	db.query(sql, (error, results) => {
-		if (error) throw error;
-		res.render("index", { usuarios: results });
-	});
+app.get('/', (req, res) => {
+  db.query('SELECT * FROM usuarios', (error, results) => {
+    if (error) throw error;
+    res.render('index', { usuarios: results });
+  });
 });
 
-// Eliminar usuario de la base de datos
-app.get("/eliminar/:id", (req, res) => {
-	const id = req.params.id;
-	db.query("DELETE FROM usuarios WHERE id = ?", id, (error, result) => {
-		if (error) throw error;
-		res.redirect("/");
-	});
+// Mostrar formulario para agregar un usuario
+app.get('/agregar', (req, res) => {
+  res.render('agregar');
 });
 
-//Agregar un usuario a la base d edatos
-app.post("/agregar", (req, res) => {
-	const { nombre, email } = req.body;
-	sql = "INSERT INTO usuarios SET ?";
-	db.query(sql, { nombre, email }, (error, result) => {
-		if (error) throw error;
-		res.redirect("/");
-	});
+// Agregar un usuario a la base de datos
+app.post('/agregar', (req, res) => {
+  const { nombre, correo } = req.body;
+  db.query('INSERT INTO usuarios SET ?', { nombre, correo }, (error, result) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
 });
 
-//Mostrar formulario para editar un usuario
-app.get("/editar/:id", (req, res) => {
-	const id = req.params.id;
-	db.query("SELECT * FROM usuarios WHERE id = ?", id, (error, result) => {
-		if (error) throw error;
-		res.render("editar", { usuario: result[0] });
-	});
+// Mostrar formulario para editar un usuario
+app.get('/editar/:id', (req, res) => {
+  const id = req.params.id;
+  db.query('SELECT * FROM usuarios WHERE id = ?', id, (error, result) => {
+    if (error) throw error;
+    res.render('editar', { usuario: result[0] });
+  });
 });
 
 // Actualizar un usuario en la base de datos
-app.post("/editar/:id", (req, res) => {
-	const { nombre, email } = req.body;
-	db.query("UPDATE usuarios SET nombre = ?, email = ?, WHERE ID = ?"[(nombre, email, id)], (error, result) => {
-		if (error) throw error;
-		res.redirect("/");
-	});
+app.post('/editar/:id', (req, res) => {
+  const id = req.params.id;
+  const { nombre, correo } = req.body;
+  db.query('UPDATE usuarios SET nombre = ?, correo = ? WHERE id = ?', [nombre, correo, id], (error, result) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
+});
+
+// Eliminar un usuario de la base de datos
+app.get('/eliminar/:id', (req, res) => {
+  const id = req.params.id;
+  db.query('DELETE FROM usuarios WHERE id = ?', id, (error, result) => {
+    if (error) throw error;
+    res.redirect('/');
+  });
+});
+
+app.listen(port, () => {
+  console.log(`App running on http://localhost:${port}`);
 });
